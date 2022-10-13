@@ -1,0 +1,11 @@
+{
+  "Version": 1,
+  "ProjectMap": {
+    "c5f80730-f44f-4478-bdae-6634efc2ca88": {
+      "ProjectGuid": "c5f80730-f44f-4478-bdae-6634efc2ca88",
+      "DisplayName": "RoverControl",
+      "ColorIndex": 0
+    }
+  },
+  "NextColorIndex": 1
+}
