@@ -112,6 +112,9 @@
   <ItemGroup>
     <ClInclude Include="__vm\.RoverControl.vsarduino.h" />
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Example.cpp" />
+  </ItemGroup>
   <PropertyGroup>
     <DebuggerFlavor>VisualMicroDebugger</DebuggerFlavor>
   </PropertyGroup>
