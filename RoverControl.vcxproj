@@ -104,6 +104,7 @@
     <ProjectCapability Include="VisualMicro" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\Samples\Mars_Rover.ino" />
     <None Include="RoverControl.ino">
       <FileType>CppCode</FileType>
     </None>
