@@ -10,10 +10,10 @@ int ch1, ch2, ch3, ch4, ch5, ch6 = 0;
 //Servos
 Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
 #define SERVOMIN  150 // This is the 'minimum' pulse length count (out of 4096)
-#define SERVOMAX  600 // This is the 'maximum' pulse length count (out of 4096)
+#define SERVOMAX  350 // This is the 'maximum' pulse length count (out of 4096)
 #define USMIN  600 // This is the rounded 'minimum' microsecond length based on the minimum pulse of 150
 #define USMAX  2400 // This is the rounded 'maximum' microsecond length based on the maximum pulse of 600
-#define SERVO_FREQ 330 // Analog servos run at ~50 Hz updates
+#define SERVO_FREQ 60//330 // Analog servos run at ~50 Hz updates
 
 void setup()
 {
@@ -55,15 +55,23 @@ void loop()
 	ch5 = readChannel(4);
 	ch6 = readChannel(5);
 
-	printChannels();
+	//printChannels();
+	/*.setPWM(0, 0, SERVOMIN);
 
+	delay(2000);
+	pwm.setPWM(0, 0, SERVOMAX);
+	delay(2000);*/
+
+	
 	// Drive each servo one at a time using setPWM()
-	pwm.setPWM(0, 0, map(ch1, -100, 100, SERVOMIN, SERVOMAX));
-	pwm.setPWM(1, 0, map(ch2, -100, 100, SERVOMIN, SERVOMAX));
-	pwm.setPWM(2, 0, map(ch3, -100, 100, SERVOMIN, SERVOMAX));
-	pwm.setPWM(3, 0, map(ch4, -100, 100, SERVOMIN, SERVOMAX));
-	pwm.setPWM(4, 0, map(ch5, -100, 100, SERVOMIN, SERVOMAX));
-	pwm.setPWM(5, 0, map(ch6, -100, 100, SERVOMIN, SERVOMAX));
+	pwm.setPWM(0, 0, map(ch1, 100, -100, SERVOMIN, SERVOMAX));
+	pwm.setPWM(1, 0, map(ch1, 100, -100, SERVOMIN, SERVOMAX));
+	
+	
+	pwm.setPWM(2, 0, map(ch3, 100, -100, SERVOMIN, SERVOMAX));
+	pwm.setPWM(3, 0, map(ch4, 100, -100, SERVOMIN, SERVOMAX));
+	pwm.setPWM(4, 0, map(ch5, 100, -100, SERVOMIN, SERVOMAX));
+	pwm.setPWM(5, 0, map(ch6, 100, -100, SERVOMIN, SERVOMAX));
 
 	delay(100);
 }
