@@ -15,6 +15,13 @@ Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
 #define USMAX  2400 // This is the rounded 'maximum' microsecond length based on the maximum pulse of 600
 #define SERVO_FREQ 60//330 // Analog servos run at ~50 Hz updates
 
+//Motors
+int RR_EL = 39, RR_ZF = 37, RR_VR = 7;
+int LR_EL = 28, LR_ZF = 30, LR_VR = 4;
+int LF_EL = 22, LF_ZF = 24, LF_VR = 2;
+
+int pwr = 0;
+
 void setup()
 {
 	// Start serial monitor
@@ -43,35 +50,70 @@ void setup()
 	*/
 	//pwm.setOscillatorFrequency(27000000);
 	pwm.setPWMFreq(SERVO_FREQ);  // Analog servos run at ~50 Hz updates
+
+	// Motors
+	pinMode(RR_EL, OUTPUT);
+	pinMode(RR_ZF, OUTPUT);
+	pinMode(LR_EL, OUTPUT);
+	pinMode(LR_ZF, OUTPUT);
+	pinMode(LF_EL, OUTPUT);
+	pinMode(LF_ZF, OUTPUT);
+
+	digitalWrite(RR_EL, LOW);
+	digitalWrite(RR_ZF, LOW);
+	digitalWrite(LR_EL, LOW);
+	digitalWrite(LR_ZF, LOW);
+	digitalWrite(LF_EL, LOW);
+	digitalWrite(LF_ZF, LOW);
 }
 
-// Add the main program code into the continuous loop() function
 void loop()
 {
+	//digitalWrite(3, HIGH);
+
+	//delay(1000);
+	//analogWrite(3, 100);
+	//delay(1000);
+
 	ch1 = readChannel(0);
 	ch2 = readChannel(1);
 	ch3 = readChannel(2);
 	ch4 = readChannel(3);
 	ch5 = readChannel(4);
 	ch6 = readChannel(5);
-
-	//printChannels();
-	/*.setPWM(0, 0, SERVOMIN);
-
-	delay(2000);
-	pwm.setPWM(0, 0, SERVOMAX);
-	delay(2000);*/
-
-	
-	// Drive each servo one at a time using setPWM()
+		
 	pwm.setPWM(0, 0, map(ch1, 100, -100, SERVOMIN, SERVOMAX));
 	pwm.setPWM(1, 0, map(ch1, 100, -100, SERVOMIN, SERVOMAX));
 	
-	
-	pwm.setPWM(2, 0, map(ch3, 100, -100, SERVOMIN, SERVOMAX));
-	pwm.setPWM(3, 0, map(ch4, 100, -100, SERVOMIN, SERVOMAX));
-	pwm.setPWM(4, 0, map(ch5, 100, -100, SERVOMIN, SERVOMAX));
-	pwm.setPWM(5, 0, map(ch6, 100, -100, SERVOMIN, SERVOMAX));
+	Serial.print("CH2:");
+	Serial.print(ch2);
+	Serial.print(" : ");
+
+	//analogWrite(RR_VR, 50);
+	//delay(2000);
+	//analogWrite(RR_VR, 0);
+	//delay(2000);
+
+	if (ch2 > 0) {
+		digitalWrite(RR_ZF, HIGH);
+		digitalWrite(LR_ZF, LOW);
+		digitalWrite(LF_ZF, LOW);
+		pwr = ch2;
+	}
+	else {
+		digitalWrite(RR_ZF, LOW);
+		digitalWrite(LR_ZF, HIGH);
+		digitalWrite(LF_ZF, HIGH);
+		pwr = ch2 * -1;
+	}
+	analogWrite(RR_VR, map(pwr, 0, 100, 0, 255));
+	digitalWrite(RR_EL, HIGH);
+	analogWrite(LR_VR, map(pwr, 0, 100, 0, 255));
+	digitalWrite(LR_EL, HIGH);
+	analogWrite(LF_VR, map(pwr, 0, 100, 0, 255));
+	digitalWrite(LF_EL, HIGH);
+
+	Serial.println(map(pwr, 0, 100, 0, 255));
 
 	delay(100);
 }
