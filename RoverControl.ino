@@ -55,21 +55,21 @@ void setup()
 	// Motors
 	pinMode(RR_EL, OUTPUT);
 	pinMode(RR_ZF, OUTPUT);
+	pinMode(RR_VR, OUTPUT);
 	pinMode(LR_EL, OUTPUT);
 	pinMode(LR_ZF, OUTPUT);
+	pinMode(LR_VR, OUTPUT);
 	pinMode(LF_EL, OUTPUT);
 	pinMode(LF_ZF, OUTPUT);
+	pinMode(LF_VR, OUTPUT);
 	pinMode(RF_EL, OUTPUT);
 	pinMode(RF_ZF, OUTPUT);
+	pinMode(RF_VR, OUTPUT);		
 
-	digitalWrite(RR_EL, LOW);
-	digitalWrite(RR_ZF, LOW);
-	digitalWrite(LR_EL, LOW);
-	digitalWrite(LR_ZF, LOW);
-	digitalWrite(LF_EL, LOW);
-	digitalWrite(LF_ZF, LOW);
-	digitalWrite(RF_EL, LOW);
-	digitalWrite(RF_ZF, LOW);
+	digitalWrite(RR_EL, HIGH);
+	digitalWrite(LR_EL, HIGH);
+	digitalWrite(LF_EL, HIGH);
+	digitalWrite(RF_EL, HIGH);
 }
 
 void loop()
@@ -113,14 +113,12 @@ void loop()
 		digitalWrite(RF_ZF, LOW);
 		pwr = ch2 * -1;
 	}
-	analogWrite(RR_VR, map(pwr, 0, 100, 0, 255));
-	digitalWrite(RR_EL, HIGH);
-	analogWrite(LR_VR, map(pwr, 0, 100, 0, 255));
-	digitalWrite(LR_EL, HIGH);
-	analogWrite(LF_VR, map(pwr, 0, 100, 0, 255));
-	digitalWrite(LF_EL, HIGH);
-	analogWrite(RF_VR, map(pwr, 0, 100, 0, 255));
-	digitalWrite(RF_EL, HIGH);
+
+	long val = map(pwr, 0, 100, 0, 255);
+	analogWrite(RR_VR, val);
+	analogWrite(LR_VR, val);
+	analogWrite(LF_VR, val);
+	analogWrite(RF_VR, val);
 
 	Serial.println(map(pwr, 0, 100, 0, 255));
 
