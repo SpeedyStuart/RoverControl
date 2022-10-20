@@ -19,6 +19,7 @@ Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
 int RR_EL = 39, RR_ZF = 37, RR_VR = 7;
 int LR_EL = 28, LR_ZF = 30, LR_VR = 4;
 int LF_EL = 22, LF_ZF = 24, LF_VR = 2;
+int RF_EL = 33, RF_ZF = 31, RF_VR = 5;
 
 int pwr = 0;
 
@@ -58,6 +59,8 @@ void setup()
 	pinMode(LR_ZF, OUTPUT);
 	pinMode(LF_EL, OUTPUT);
 	pinMode(LF_ZF, OUTPUT);
+	pinMode(RF_EL, OUTPUT);
+	pinMode(RF_ZF, OUTPUT);
 
 	digitalWrite(RR_EL, LOW);
 	digitalWrite(RR_ZF, LOW);
@@ -65,6 +68,8 @@ void setup()
 	digitalWrite(LR_ZF, LOW);
 	digitalWrite(LF_EL, LOW);
 	digitalWrite(LF_ZF, LOW);
+	digitalWrite(RF_EL, LOW);
+	digitalWrite(RF_ZF, LOW);
 }
 
 void loop()
@@ -98,12 +103,14 @@ void loop()
 		digitalWrite(RR_ZF, HIGH);
 		digitalWrite(LR_ZF, LOW);
 		digitalWrite(LF_ZF, LOW);
+		digitalWrite(RF_ZF, HIGH);
 		pwr = ch2;
 	}
 	else {
 		digitalWrite(RR_ZF, LOW);
 		digitalWrite(LR_ZF, HIGH);
 		digitalWrite(LF_ZF, HIGH);
+		digitalWrite(RF_ZF, LOW);
 		pwr = ch2 * -1;
 	}
 	analogWrite(RR_VR, map(pwr, 0, 100, 0, 255));
@@ -112,6 +119,8 @@ void loop()
 	digitalWrite(LR_EL, HIGH);
 	analogWrite(LF_VR, map(pwr, 0, 100, 0, 255));
 	digitalWrite(LF_EL, HIGH);
+	analogWrite(RF_VR, map(pwr, 0, 100, 0, 255));
+	digitalWrite(RF_EL, HIGH);
 
 	Serial.println(map(pwr, 0, 100, 0, 255));
 
