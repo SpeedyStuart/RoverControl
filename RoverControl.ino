@@ -18,8 +18,10 @@ Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
 //Motors
 int RR_EL = 39, RR_ZF = 37, RR_VR = 7;
 int LR_EL = 28, LR_ZF = 30, LR_VR = 4;
+int RM_EL = 36, RM_ZF = 34, RM_VR = 6;
 int LF_EL = 22, LF_ZF = 24, LF_VR = 2;
 int RF_EL = 33, RF_ZF = 31, RF_VR = 5;
+int LM_EL = 25, LM_ZF = 27, LM_VR = 3;
 
 int pwr = 0;
 
@@ -62,14 +64,22 @@ void setup()
 	pinMode(LF_EL, OUTPUT);
 	pinMode(LF_ZF, OUTPUT);
 	pinMode(LF_VR, OUTPUT);
+	pinMode(LM_EL, OUTPUT);
+	pinMode(LM_ZF, OUTPUT);
+	pinMode(LM_VR, OUTPUT);
 	pinMode(RF_EL, OUTPUT);
 	pinMode(RF_ZF, OUTPUT);
-	pinMode(RF_VR, OUTPUT);		
+	pinMode(RF_VR, OUTPUT);	
+	pinMode(RM_EL, OUTPUT);
+	pinMode(RM_ZF, OUTPUT);
+	pinMode(RM_VR, OUTPUT);
 
-	digitalWrite(RR_EL, HIGH);
-	digitalWrite(LR_EL, HIGH);
-	digitalWrite(LF_EL, HIGH);
 	digitalWrite(RF_EL, HIGH);
+	digitalWrite(RM_EL, HIGH);
+	digitalWrite(RR_EL, HIGH);
+	digitalWrite(LF_EL, HIGH);
+	digitalWrite(LM_EL, HIGH);
+	digitalWrite(LR_EL, HIGH);
 }
 
 void loop()
@@ -89,6 +99,8 @@ void loop()
 		
 	pwm.setPWM(0, 0, map(ch1, 100, -100, SERVOMIN, SERVOMAX));
 	pwm.setPWM(1, 0, map(ch1, 100, -100, SERVOMIN, SERVOMAX));
+	pwm.setPWM(2, 0, map(ch1, 100, -100, SERVOMIN, SERVOMAX));
+	pwm.setPWM(3, 0, map(ch1, 100, -100, SERVOMIN, SERVOMAX));
 	
 	Serial.print("CH2:");
 	Serial.print(ch2);
@@ -101,24 +113,30 @@ void loop()
 
 	if (ch2 > 0) {
 		digitalWrite(RR_ZF, HIGH);
-		digitalWrite(LR_ZF, LOW);
-		digitalWrite(LF_ZF, LOW);
+		digitalWrite(RM_ZF, HIGH);
 		digitalWrite(RF_ZF, HIGH);
+		digitalWrite(LR_ZF, LOW);
+		digitalWrite(LM_ZF, LOW);
+		digitalWrite(LF_ZF, LOW);
 		pwr = ch2;
 	}
 	else {
 		digitalWrite(RR_ZF, LOW);
+		digitalWrite(RF_ZF, LOW);
+		digitalWrite(RM_ZF, LOW);
 		digitalWrite(LR_ZF, HIGH);
 		digitalWrite(LF_ZF, HIGH);
-		digitalWrite(RF_ZF, LOW);
+		digitalWrite(LM_ZF, HIGH);
 		pwr = ch2 * -1;
 	}
 
 	long val = map(pwr, 0, 100, 0, 255);
 	analogWrite(RR_VR, val);
+	analogWrite(RF_VR, val);
+	analogWrite(RM_VR, val);
 	analogWrite(LR_VR, val);
 	analogWrite(LF_VR, val);
-	analogWrite(RF_VR, val);
+	analogWrite(LM_VR, val);
 
 	Serial.println(map(pwr, 0, 100, 0, 255));
 
