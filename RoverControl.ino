@@ -5,6 +5,7 @@
 
 #define USE_PCA9685_SERVO_EXPANDER
 #include <ServoEasing.hpp>
+#include "PinDefinitions.h"
 
 // R/C
 IBusBM IBus;
@@ -18,7 +19,9 @@ Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
 #define USMIN  600 // This is the rounded 'minimum' microsecond length based on the minimum pulse of 150
 #define USMAX  2400 // This is the rounded 'maximum' microsecond length based on the maximum pulse of 600
 #define SERVO_FREQ 60//330 // Analog servos run at ~50 Hz updates
-ServoEasing servoW1;
+
+ServoEasing servoW1(PCA9685_DEFAULT_ADDRESS);
+
 ServoEasing servoW3;
 ServoEasing servoW4;
 ServoEasing servoW6;
@@ -37,16 +40,21 @@ void setup()
 {
 	// Start serial monitor
 	Serial.begin(115200);
+	Serial.println(F("START " __FILE__ " from " __DATE__ "\r\nUsing library version " VERSION_SERVO_EASING));
 
 	// R/C: Attach iBus object to serial port
 	IBus.begin(Serial1);
 
-	servoW1.attach(0);
+	if (servoW1.attach(0, 0) == INVALID_SERVO) {
+		Serial.println(F("Error attaching servo"));
+	}
+
+	/*servoW1.attach(0);
 	servoW3.attach(1);
 	servoW4.attach(2);
 	servoW6.attach(3);
 
-	servoW1.write(90);
+	servoW1.write(90);*/
 
 	// Servos:
 	////pwm.begin();
@@ -115,7 +123,7 @@ void loop()
 	
 	int sDeg = map(ch1, 100, -100, 0, 180);
 
-	servoW1.startEaseTo(sDeg, 40);
+	servoW1.startEaseToD(sDeg, 1000);
 
 	/*pwm.setPWM(0, 0, map(ch1, 100, -100, SERVOMIN, SERVOMAX));
 	pwm.setPWM(1, 0, map(ch1, 100, -100, SERVOMIN, SERVOMAX));
