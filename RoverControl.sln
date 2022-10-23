@@ -12,10 +12,14 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Adafruit_PWM_Servo_Driver_Library-2.4.1", "C:\Users\stupo\OneDrive\Documents\Arduino\libraries\Adafruit_PWM_Servo_Driver_Library\Adafruit_PWM_Servo_Driver_Library-2.4.1.vcxitems", "{15A654D0-CC9D-4779-A862-6034FF475D6B}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ServoEasing-3.1.0", "C:\Users\stupo\OneDrive\Documents\Arduino\libraries\ServoEasing\ServoEasing-3.1.0.vcxitems", "{61CAF810-2EAC-4925-B631-C9C96ACC68B5}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		C:\Users\stupo\OneDrive\Documents\Arduino\libraries\Adafruit_PWM_Servo_Driver_Library\Adafruit_PWM_Servo_Driver_Library-2.4.1.vcxitems*{15a654d0-cc9d-4779-a862-6034ff475d6b}*SharedItemsImports = 9
+		C:\Users\stupo\OneDrive\Documents\Arduino\libraries\ServoEasing\ServoEasing-3.1.0.vcxitems*{61caf810-2eac-4925-b631-c9c96acc68b5}*SharedItemsImports = 9
 		C:\Users\stupo\OneDrive\Documents\Arduino\libraries\Adafruit_PWM_Servo_Driver_Library\Adafruit_PWM_Servo_Driver_Library-2.4.1.vcxitems*{c5f80730-f44f-4478-bdae-6634efc2ca88}*SharedItemsImports = 4
+		C:\Users\stupo\OneDrive\Documents\Arduino\libraries\ServoEasing\ServoEasing-3.1.0.vcxitems*{c5f80730-f44f-4478-bdae-6634efc2ca88}*SharedItemsImports = 4
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x86 = Debug|x86

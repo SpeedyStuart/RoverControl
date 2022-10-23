@@ -1,6 +1,10 @@
+
 #include <Wire.h>
 #include <Adafruit_PWMServoDriver.h>
 #include <IBusBM.h>
+
+#define USE_PCA9685_SERVO_EXPANDER
+#include <ServoEasing.hpp>
 
 // R/C
 IBusBM IBus;
@@ -14,6 +18,10 @@ Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
 #define USMIN  600 // This is the rounded 'minimum' microsecond length based on the minimum pulse of 150
 #define USMAX  2400 // This is the rounded 'maximum' microsecond length based on the maximum pulse of 600
 #define SERVO_FREQ 60//330 // Analog servos run at ~50 Hz updates
+ServoEasing servoW1;
+ServoEasing servoW3;
+ServoEasing servoW4;
+ServoEasing servoW6;
 
 //Motors
 int RR_EL = 39, RR_ZF = 37, RR_VR = 7;
@@ -33,8 +41,15 @@ void setup()
 	// R/C: Attach iBus object to serial port
 	IBus.begin(Serial1);
 
+	servoW1.attach(0);
+	servoW3.attach(1);
+	servoW4.attach(2);
+	servoW6.attach(3);
+
+	servoW1.write(90);
+
 	// Servos:
-	pwm.begin();
+	////pwm.begin();
 	/*
 	   In theory the internal oscillator (clock) is 25MHz but it really isn't
 	   that precise. You can 'calibrate' this by tweaking this number until
@@ -52,7 +67,8 @@ void setup()
 	   Failure to correctly set the int.osc value will cause unexpected PWM results
 	*/
 	//pwm.setOscillatorFrequency(27000000);
-	pwm.setPWMFreq(SERVO_FREQ);  // Analog servos run at ~50 Hz updates
+	
+	////pwm.setPWMFreq(SERVO_FREQ);  // Analog servos run at ~50 Hz updates
 
 	// Motors
 	pinMode(RR_EL, OUTPUT);
@@ -96,11 +112,15 @@ void loop()
 	ch4 = readChannel(3);
 	ch5 = readChannel(4);
 	ch6 = readChannel(5);
-		
-	pwm.setPWM(0, 0, map(ch1, 100, -100, SERVOMIN, SERVOMAX));
+	
+	int sDeg = map(ch1, 100, -100, 0, 180);
+
+	servoW1.startEaseTo(sDeg, 40);
+
+	/*pwm.setPWM(0, 0, map(ch1, 100, -100, SERVOMIN, SERVOMAX));
 	pwm.setPWM(1, 0, map(ch1, 100, -100, SERVOMIN, SERVOMAX));
 	pwm.setPWM(2, 0, map(ch1, 100, -100, SERVOMIN, SERVOMAX));
-	pwm.setPWM(3, 0, map(ch1, 100, -100, SERVOMIN, SERVOMAX));
+	pwm.setPWM(3, 0, map(ch1, 100, -100, SERVOMIN, SERVOMAX));*/
 	
 	Serial.print("CH2:");
 	Serial.print(ch2);
