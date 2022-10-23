@@ -99,8 +99,8 @@ void loop()
 		
 	pwm.setPWM(0, 0, map(ch1, 100, -100, SERVOMIN, SERVOMAX));
 	pwm.setPWM(1, 0, map(ch1, 100, -100, SERVOMIN, SERVOMAX));
-	pwm.setPWM(2, 0, map(ch1, 100, -100, SERVOMIN, SERVOMAX));
-	pwm.setPWM(3, 0, map(ch1, 100, -100, SERVOMIN, SERVOMAX));
+	pwm.setPWM(2, 0, map(ch1, -100, 100, SERVOMIN, SERVOMAX));
+	pwm.setPWM(3, 0, map(ch1, -100, 100, SERVOMIN, SERVOMAX));
 	
 	Serial.print("CH2:");
 	Serial.print(ch2);
