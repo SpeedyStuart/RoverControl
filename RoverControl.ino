@@ -21,10 +21,9 @@ Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
 #define SERVO_FREQ 60//330 // Analog servos run at ~50 Hz updates
 
 ServoEasing servoW1(PCA9685_DEFAULT_ADDRESS);
-
-ServoEasing servoW3;
-ServoEasing servoW4;
-ServoEasing servoW6;
+ServoEasing servoW3(PCA9685_DEFAULT_ADDRESS);
+ServoEasing servoW4(PCA9685_DEFAULT_ADDRESS);
+ServoEasing servoW6(PCA9685_DEFAULT_ADDRESS);
 
 //Motors
 int RR_EL = 39, RR_ZF = 37, RR_VR = 7;
@@ -45,9 +44,12 @@ void setup()
 	// R/C: Attach iBus object to serial port
 	IBus.begin(Serial1);
 
-	if (servoW1.attach(0, 0) == INVALID_SERVO) {
+	if (servoW1.attach(0, 90) == INVALID_SERVO) {
 		Serial.println(F("Error attaching servo"));
 	}
+	servoW3.attach(1, 90);
+	servoW4.attach(2, 90);
+	servoW6.attach(3, 90);
 
 	/*servoW1.attach(0);
 	servoW3.attach(1);
@@ -122,17 +124,21 @@ void loop()
 	ch6 = readChannel(5);
 	
 	int sDeg = map(ch1, 100, -100, 0, 180);
+	Serial.print("CH:");
+	Serial.print(ch1);
+	Serial.print("   Degrees:");
+	Serial.println(sDeg);
 
-	servoW1.startEaseToD(sDeg, 1000);
+	servoW1.startEaseToD(sDeg, 100);
+	servoW3.startEaseToD(sDeg, 100);
+	servoW4.startEaseToD(sDeg, 100);
+	servoW6.startEaseToD(sDeg, 100);
 
 	/*pwm.setPWM(0, 0, map(ch1, 100, -100, SERVOMIN, SERVOMAX));
 	pwm.setPWM(1, 0, map(ch1, 100, -100, SERVOMIN, SERVOMAX));
 	pwm.setPWM(2, 0, map(ch1, 100, -100, SERVOMIN, SERVOMAX));
 	pwm.setPWM(3, 0, map(ch1, 100, -100, SERVOMIN, SERVOMAX));*/
-	
-	Serial.print("CH2:");
-	Serial.print(ch2);
-	Serial.print(" : ");
+
 
 	//analogWrite(RR_VR, 50);
 	//delay(2000);
@@ -166,7 +172,7 @@ void loop()
 	analogWrite(LF_VR, val);
 	analogWrite(LM_VR, val);
 
-	Serial.println(map(pwr, 0, 100, 0, 255));
+	//Serial.println(map(pwr, 0, 100, 0, 255));
 
 	delay(100);
 }
