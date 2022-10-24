@@ -1,4 +1,3 @@
-
 #include <Wire.h>
 #include <Adafruit_PWMServoDriver.h>
 #include <IBusBM.h>
@@ -7,19 +6,14 @@
 #include <ServoEasing.hpp>
 #include "PinDefinitions.h"
 
+#define BASIC_CONTROL false
+
 // R/C
 IBusBM IBus;
 IBusBM IBusSensor;
 int ch1, ch2, ch3, ch4, ch5, ch6 = 0;
 
-//Servos
-Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
-#define SERVOMIN  150 // This is the 'minimum' pulse length count (out of 4096)
-#define SERVOMAX  350 // This is the 'maximum' pulse length count (out of 4096)
-#define USMIN  600 // This is the rounded 'minimum' microsecond length based on the minimum pulse of 150
-#define USMAX  2400 // This is the rounded 'maximum' microsecond length based on the maximum pulse of 600
-#define SERVO_FREQ 60//330 // Analog servos run at ~50 Hz updates
-
+// Servos
 ServoEasing servoW1(PCA9685_DEFAULT_ADDRESS);
 ServoEasing servoW3(PCA9685_DEFAULT_ADDRESS);
 ServoEasing servoW4(PCA9685_DEFAULT_ADDRESS);
@@ -35,6 +29,26 @@ int LM_EL = 25, LM_ZF = 27, LM_VR = 3;
 
 int pwr = 0;
 
+// Geometry
+float d1 = 380; // Horizontal distance between middle of rover and corner wheels
+float d2 = 350; // Vertical distance between middle of rover and back corner wheels
+float d3 = 430; // Vertical distance between middle of rover and front corner wheels
+float d4 = 300; // Horizontal distance between middle of rover and centre wheels
+float rMin = 850; // Min turning radius (d1 + (d3/tan(45deg))  tan(45) = 1  380 + 430  (add 40mm for safety)
+float rMax = 25000; // Max turning radius (~straight)
+
+int angle = 0;   // servo position in degrees
+int servo1Angle = 90;
+int servo3Angle = 90;
+int servo4Angle = 90;
+int servo6Angle = 90;
+int s = 0; // rover speed
+int r = 0; // turning radius
+int m1, m2, m3, m4, m5, m6;
+float speed1, speed2, speed3 = 0;
+float speed1PWM, speed2PWM, speed3PWM = 0;
+float thetaInnerFront, thetaInnerBack, thetaOuterFront, thetaOuterBack = 0;
+
 void setup()
 {
 	// Start serial monitor
@@ -44,41 +58,10 @@ void setup()
 	// R/C: Attach iBus object to serial port
 	IBus.begin(Serial1);
 
-	if (servoW1.attach(0, 90) == INVALID_SERVO) {
-		Serial.println(F("Error attaching servo"));
-	}
+	servoW1.attach(0, 90);
 	servoW3.attach(1, 90);
 	servoW4.attach(2, 90);
 	servoW6.attach(3, 90);
-
-	/*servoW1.attach(0);
-	servoW3.attach(1);
-	servoW4.attach(2);
-	servoW6.attach(3);
-
-	servoW1.write(90);*/
-
-	// Servos:
-	////pwm.begin();
-	/*
-	   In theory the internal oscillator (clock) is 25MHz but it really isn't
-	   that precise. You can 'calibrate' this by tweaking this number until
-	   you get the PWM update frequency you're expecting!
-	   The int.osc. for the PCA9685 chip is a range between about 23-27MHz and
-	   is used for calculating things like writeMicroseconds()
-	   Analog servos run at ~50 Hz updates, It is importaint to use an
-	   oscilloscope in setting the int.osc frequency for the I2C PCA9685 chip.
-	   1) Attach the oscilloscope to one of the PWM signal pins and ground on
-		  the I2C PCA9685 chip you are setting the value for.
-	   2) Adjust setOscillatorFrequency() until the PWM update frequency is the
-		  expected value (50Hz for most ESCs)
-	   Setting the value here is specific to each individual I2C PCA9685 chip and
-	   affects the calculations for the PWM update frequency.
-	   Failure to correctly set the int.osc value will cause unexpected PWM results
-	*/
-	//pwm.setOscillatorFrequency(27000000);
-	
-	////pwm.setPWMFreq(SERVO_FREQ);  // Analog servos run at ~50 Hz updates
 
 	// Motors
 	pinMode(RR_EL, OUTPUT);
@@ -100,6 +83,7 @@ void setup()
 	pinMode(RM_ZF, OUTPUT);
 	pinMode(RM_VR, OUTPUT);
 
+	// Turn motors on
 	digitalWrite(RF_EL, HIGH);
 	digitalWrite(RM_EL, HIGH);
 	digitalWrite(RR_EL, HIGH);
@@ -110,24 +94,87 @@ void setup()
 
 void loop()
 {
-	//digitalWrite(3, HIGH);
+	if (BASIC_CONTROL) {
+		basicControl();
+	}
+	else
+	{
+		advancedControl();
+	}
+}
 
-	//delay(1000);
-	//analogWrite(3, 100);
-	//delay(1000);
-
+void advancedControl()
+{
+	//IBus.loop();
 	ch1 = readChannel(0);
 	ch2 = readChannel(1);
 	ch3 = readChannel(2);
 	ch4 = readChannel(3);
 	ch5 = readChannel(4);
 	ch6 = readChannel(5);
+
+	int sDeg = map(ch1, 100, -100, 0, 180);
 	
+	if (ch1 > 0) {
+		r = map(sDeg, 0, 100, rMin, rMax);
+	}
+	else {
+		r = map(sDeg, -100, 0, rMin, rMax);
+	}
+	
+	if (ch3 > 0) {
+		s = ch3;
+	}
+	else {
+		s = ch3 * -1;
+	}
+	
+	calculateMotorsSpeed();
+	calculateServoAngle();
+
+	if (ch1 > 10) {
+		// Right
+		// Outer wheels
+		servoW1.startEaseTo(90 + thetaInnerFront); // front wheel steer right
+		servoW3.startEaseTo(90 - thetaInnerBack); // back wheel steer left for overall steering to the right of the rover
+		// Inner wheels
+		servoW4.startEaseTo(90 + thetaOuterFront);
+		servoW6.startEaseTo(90 - thetaOuterBack);
+	}
+	else if (ch1 < 10) {
+		servoW1.startEaseTo(90 - thetaOuterFront);
+		servoW3.startEaseTo(90 + thetaOuterBack);
+		servoW4.startEaseTo(90 - thetaInnerFront);
+		servoW6.startEaseTo(90 + thetaInnerBack);
+	}
+	else
+	{
+		servoW1.startEaseTo(90);
+		servoW3.startEaseTo(90);
+		servoW4.startEaseTo(90);
+		servoW6.startEaseTo(90);
+	}
+	//r = map(sDeg, 0, 180, -53, 53);
+}
+
+
+
+void basicControl() {
+	ch1 = readChannel(0);
+	ch2 = readChannel(1);
+	ch3 = readChannel(2);
+	ch4 = readChannel(3);
+	ch5 = readChannel(4);
+	ch6 = readChannel(5);
+
 	int sDeg = map(ch1, 100, -100, 0, 180);
 	Serial.print("CH:");
 	Serial.print(ch1);
 	Serial.print("   Degrees:");
 	Serial.println(sDeg);
+
+	// 90 === 53
+
 
 	servoW1.startEaseToD(sDeg, 100);
 	servoW3.startEaseToD(sDeg, 100);
@@ -175,6 +222,36 @@ void loop()
 	//Serial.println(map(pwr, 0, 100, 0, 255));
 
 	delay(100);
+}
+
+void calculateMotorsSpeed() {
+	// if no steering, all wheels speed is the same - straight move
+	if (ch1 > -20 && ch1 < 20) {
+		speed1 = speed2 = speed3 = s;
+	}
+	// when steering, wheels speed depend on the turning radius value
+	else {
+		// Outer wheels, furthest wheels from turning point, have max speed
+		// Due to the rover geometry, all three outer wheels should rotate almost with the same speed. They differe only 1% so we asume they are the same.
+		speed1 = s;
+		// Inner front and back wheels are closer to the turing point and have lower speeds compared to the outer speeds
+		speed2 = s * sqrt(pow(d3, 2) + pow((r - d1), 2)) / (r + d4);
+		// Inner middle wheel is closest to the turning point, has the lowest speed
+		speed3 = s * (r - d4) / (r + d4);
+	}
+
+	// speed value from 0 to 100% to PWM value from 0 to 255
+	speed1PWM = map(round(speed1), 0, 100, 0, 255);
+	speed2PWM = map(round(speed2), 0, 100, 0, 255);
+	speed3PWM = map(round(speed3), 0, 100, 0, 255);
+}
+
+void calculateServoAngle() {
+	// Calculate the angle for each servo for the input turning radius "r"
+	thetaInnerFront = map(round((atan((d3 / (r + d1)))) * 180 / PI), 0, 53, 0, 90);
+	thetaInnerBack = map(round((atan((d2 / (r + d1)))) * 180 / PI), 0, 53, 0, 90);
+	thetaOuterFront = map(round((atan((d3 / (r - d1)))) * 180 / PI), 0, 53, 0, 90);
+	thetaOuterBack = map(round((atan((d2 / (r - d1)))) * 180 / PI), 0, 53, 0, 90);
 }
 
 void printChannels() {
