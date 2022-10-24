@@ -143,17 +143,43 @@ void advancedControl()
 	Serial.print(" s:");
 	Serial.print(s);
 
-	//calculateMotorsSpeed();
-	calculateServoAngle();
+	calculateMotorsSpeed();
+	Serial.print(" SP1:");
+	Serial.print(speed1);
+	Serial.print(" SP2:");
+	Serial.print(speed2);
+	Serial.print(" SP3:");
+	Serial.print(speed2);
 
-	Serial.print(" I_F:");
+	calculateServoAngle();
+	/*Serial.print(" I_F:");
 	Serial.print(thetaInnerFront);
 	Serial.print(" I_B:");
 	Serial.print(thetaInnerBack);
 	Serial.print(" O_F:");
 	Serial.print(thetaOuterFront);
 	Serial.print(" O_B:");
-	Serial.println(thetaOuterBack);
+	Serial.print(thetaOuterBack);*/
+
+	Serial.println("");
+
+	// Set motor directions
+	if (ch2 > 0) {
+		digitalWrite(RR_ZF, HIGH);
+		digitalWrite(RM_ZF, HIGH);
+		digitalWrite(RF_ZF, HIGH);
+		digitalWrite(LR_ZF, LOW);
+		digitalWrite(LM_ZF, LOW);
+		digitalWrite(LF_ZF, LOW);
+	}
+	else {
+		digitalWrite(RR_ZF, LOW);
+		digitalWrite(RF_ZF, LOW);
+		digitalWrite(RM_ZF, LOW);
+		digitalWrite(LR_ZF, HIGH);
+		digitalWrite(LF_ZF, HIGH);
+		digitalWrite(LM_ZF, HIGH);
+	}
 
 	if (ch1 > 10) {
 		// Right
@@ -163,12 +189,33 @@ void advancedControl()
 		// Inner wheels
 		servoW4.startEaseTo(90 + thetaOuterFront);
 		servoW6.startEaseTo(90 - thetaOuterBack);
+
+		//Outer wheels run at speed1 (outer wheels are L)
+		analogWrite(LR_VR, speed1);
+		analogWrite(LF_VR, speed1);
+		analogWrite(LM_VR, speed1);
+		// Inner front and rear at speed2
+		analogWrite(RR_VR, speed2);
+		analogWrite(RF_VR, speed2);
+		// Inner middle ar speed3
+		analogWrite(RM_VR, speed3);
+		
 	}
 	else if (ch1 < -10) {
 		servoW1.startEaseTo(90 - thetaOuterFront);
 		servoW3.startEaseTo(90 + thetaOuterBack);
 		servoW4.startEaseTo(90 - thetaInnerFront);
 		servoW6.startEaseTo(90 + thetaInnerBack);
+		
+		//Outer wheels run at speed1 (outer wheels are R)
+		analogWrite(RR_VR, speed1);
+		analogWrite(RF_VR, speed1);
+		analogWrite(RM_VR, speed1);
+		// Inner front and rear at speed2
+		analogWrite(LR_VR, speed2);
+		analogWrite(LF_VR, speed2);
+		// Inner middle ar speed3
+		analogWrite(LM_VR, speed3);
 	}
 	else
 	{
@@ -176,6 +223,14 @@ void advancedControl()
 		servoW3.startEaseTo(90);
 		servoW4.startEaseTo(90);
 		servoW6.startEaseTo(90);
+
+		//All wheels run at speed1
+		analogWrite(RR_VR, speed1);
+		analogWrite(RF_VR, speed1);
+		analogWrite(RM_VR, speed1);
+		analogWrite(LR_VR, speed1);
+		analogWrite(LF_VR, speed1);
+		analogWrite(LM_VR, speed1);
 	}
 	//r = map(sDeg, 0, 180, -53, 53);
 
