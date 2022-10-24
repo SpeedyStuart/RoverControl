@@ -164,7 +164,7 @@ void advancedControl()
 	Serial.println("");
 
 	// Set motor directions
-	if (ch2 > 0) {
+	if (ch2 < 0) {
 		digitalWrite(RR_ZF, HIGH);
 		digitalWrite(RM_ZF, HIGH);
 		digitalWrite(RF_ZF, HIGH);
