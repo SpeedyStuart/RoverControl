@@ -35,7 +35,7 @@ float d2 = 350; // Vertical distance between middle of rover and back corner whe
 float d3 = 430; // Vertical distance between middle of rover and front corner wheels
 float d4 = 300; // Horizontal distance between middle of rover and centre wheels
 float rMin = 850; // Min turning radius (d1 + (d3/tan(45deg))  tan(45) = 1  380 + 430  (add 40mm for safety)
-float rMax = 25000; // Max turning radius (~straight)
+float rMax = 2500; // Max turning radius (~straight)
 
 int angle = 0;   // servo position in degrees
 int servo1Angle = 90;
@@ -58,10 +58,10 @@ void setup()
 	// R/C: Attach iBus object to serial port
 	IBus.begin(Serial1);
 
-	servoW1.attach(0, 90);
-	servoW3.attach(1, 90);
-	servoW4.attach(2, 90);
-	servoW6.attach(3, 90);
+	servoW1.attach(1, 90);
+	servoW3.attach(3, 90);
+	servoW4.attach(0, 90);
+	servoW6.attach(2, 90);
 
 	servoW1.setSpeed(90);
 	servoW3.setSpeed(90);
@@ -124,20 +124,20 @@ void advancedControl()
 	int sDeg = map(ch1, 100, -100, 0, 180);
 	
 	if (ch1 > 0) {
-		r = map(sDeg, 0, 100, rMin, rMax);
+		r = map(ch1, 100, 0, rMin, rMax);
 	}
 	else {
-		r = map(sDeg, -100, 0, rMin, rMax);
+		r = map(ch1, -100, 0, rMin, rMax);
 	}
 	
 	Serial.print(" r:");
 	Serial.print(r);
 
-	if (ch3 > 0) {
-		s = ch3;
+	if (ch2 > 0) {
+		s = ch2;
 	}
 	else {
-		s = ch3 * -1;
+		s = ch2 * -1;
 	}
 	
 	Serial.print(" s:");
@@ -164,7 +164,7 @@ void advancedControl()
 		servoW4.startEaseTo(90 + thetaOuterFront);
 		servoW6.startEaseTo(90 - thetaOuterBack);
 	}
-	else if (ch1 < 10) {
+	else if (ch1 < -10) {
 		servoW1.startEaseTo(90 - thetaOuterFront);
 		servoW3.startEaseTo(90 + thetaOuterBack);
 		servoW4.startEaseTo(90 - thetaInnerFront);
