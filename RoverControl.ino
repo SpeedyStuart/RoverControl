@@ -63,6 +63,11 @@ void setup()
 	servoW4.attach(2, 90);
 	servoW6.attach(3, 90);
 
+	servoW1.setSpeed(90);
+	servoW3.setSpeed(90);
+	servoW4.setSpeed(90);
+	servoW6.setSpeed(90);
+
 	// Motors
 	pinMode(RR_EL, OUTPUT);
 	pinMode(RR_ZF, OUTPUT);
@@ -113,6 +118,9 @@ void advancedControl()
 	ch5 = readChannel(4);
 	ch6 = readChannel(5);
 
+	Serial.print("Ch1:");
+	Serial.print(ch1);
+
 	int sDeg = map(ch1, 100, -100, 0, 180);
 	
 	if (ch1 > 0) {
@@ -122,6 +130,9 @@ void advancedControl()
 		r = map(sDeg, -100, 0, rMin, rMax);
 	}
 	
+	Serial.print(" r:");
+	Serial.print(r);
+
 	if (ch3 > 0) {
 		s = ch3;
 	}
@@ -129,8 +140,20 @@ void advancedControl()
 		s = ch3 * -1;
 	}
 	
-	calculateMotorsSpeed();
+	Serial.print(" s:");
+	Serial.print(s);
+
+	//calculateMotorsSpeed();
 	calculateServoAngle();
+
+	Serial.print(" I_F:");
+	Serial.print(thetaInnerFront);
+	Serial.print(" I_B:");
+	Serial.print(thetaInnerBack);
+	Serial.print(" O_F:");
+	Serial.print(thetaOuterFront);
+	Serial.print(" O_B:");
+	Serial.println(thetaOuterBack);
 
 	if (ch1 > 10) {
 		// Right
@@ -155,6 +178,8 @@ void advancedControl()
 		servoW6.startEaseTo(90);
 	}
 	//r = map(sDeg, 0, 180, -53, 53);
+
+	delay(100);
 }
 
 
