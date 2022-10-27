@@ -1,12 +1,20 @@
 #include <Wire.h>
 #include <Adafruit_PWMServoDriver.h>
 #include <IBusBM.h>
+#include <EEPROM.h>
 
 #define USE_PCA9685_SERVO_EXPANDER
 #include <ServoEasing.hpp>
 #include "PinDefinitions.h"
 
 #define BASIC_CONTROL false
+
+struct ServoTrims {
+	int servo1;
+	int servo3;
+	int servo4;
+	int servo6;
+};
 
 // R/C
 IBusBM IBus;
@@ -38,6 +46,8 @@ float rMin = 850; // Min turning radius (d1 + (d3/tan(45deg))  tan(45) = 1  380 
 float rMax = 2500; // Max turning radius (~straight)
 
 int angle = 0;   // servo position in degrees
+int servoTrimsAddress = 0;
+ServoTrims servoTrims = { 90,90,90,90 };
 int servo1Angle = 90;
 int servo3Angle = 90;
 int servo4Angle = 90;
@@ -58,10 +68,12 @@ void setup()
 	// R/C: Attach iBus object to serial port
 	IBus.begin(Serial1);
 
-	servoW1.attach(1, 90);
-	servoW3.attach(3, 90);
-	servoW4.attach(0, 90);
-	servoW6.attach(2, 90);
+	EEPROM.get(servoTrimsAddress, servoTrims);
+
+	servoW1.attach(1, servoTrims.servo1);
+	servoW3.attach(3, servoTrims.servo3);
+	servoW4.attach(0, servoTrims.servo4);
+	servoW6.attach(2, servoTrims.servo6);
 
 	servoW1.setSpeed(90);
 	servoW3.setSpeed(90);
@@ -99,6 +111,25 @@ void setup()
 
 void loop()
 {
+	//IBus.loop();
+	ch1 = readChannel(0);
+	ch2 = readChannel(1);
+	ch3 = readChannel(2);
+	ch4 = readChannel(3);
+	ch5 = readChannel(4);
+	ch6 = readChannel(5);
+
+	Serial.print("Channel 6 : ");
+	Serial.print(ch6);
+	if (readSwitch(5, false)) {
+		Serial.println(" - Switched on");
+		Serial.print("Channel 5: ");
+		Serial.println(ch5);
+	}
+	else {
+		Serial.println(" - Switched off");
+	}
+
 	if (BASIC_CONTROL) {
 		basicControl();
 	}
@@ -110,14 +141,6 @@ void loop()
 
 void advancedControl()
 {
-	//IBus.loop();
-	ch1 = readChannel(0);
-	ch2 = readChannel(1);
-	ch3 = readChannel(2);
-	ch4 = readChannel(3);
-	ch5 = readChannel(4);
-	ch6 = readChannel(5);
-
 	Serial.print("Ch1:");
 	Serial.print(ch1);
 
@@ -237,15 +260,7 @@ void advancedControl()
 	delay(100);
 }
 
-
-
 void basicControl() {
-	ch1 = readChannel(0);
-	ch2 = readChannel(1);
-	ch3 = readChannel(2);
-	ch4 = readChannel(3);
-	ch5 = readChannel(4);
-	ch6 = readChannel(5);
 
 	int sDeg = map(ch1, 100, -100, 0, 180);
 	Serial.print("CH:");
