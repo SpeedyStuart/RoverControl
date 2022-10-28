@@ -124,7 +124,9 @@ void loop()
 	if (readSwitch(5, false)) {
 		Serial.println(" - Switched on");
 		Serial.print("Channel 5: ");
-		Serial.println(ch5);
+		Serial.print(ch5);
+		Serial.print(" Channel 4: ");
+		Serial.println(ch4);
 	}
 	else {
 		Serial.println(" - Switched off");
