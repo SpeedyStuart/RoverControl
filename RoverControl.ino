@@ -52,6 +52,8 @@ int servo1Angle = 90;
 int servo3Angle = 90;
 int servo4Angle = 90;
 int servo6Angle = 90;
+int currentWheel = 1;
+
 int s = 0; // rover speed
 int r = 0; // turning radius
 int m1, m2, m3, m4, m5, m6;
@@ -119,26 +121,68 @@ void loop()
 	ch5 = readChannel(4);
 	ch6 = readChannel(5);
 
-	Serial.print("Channel 6 : ");
-	Serial.print(ch6);
-	if (readSwitch(5, false)) {
-		Serial.println(" - Switched on");
-		Serial.print("Channel 5: ");
-		Serial.print(ch5);
-		Serial.print(" Channel 4: ");
-		Serial.println(ch4);
+	
+	if (readSwitch(5, false))  // Channel 6
+	{ 		
+		setTrims();
+	}
+	else 
+	{
+		if (BASIC_CONTROL) {
+			basicControl();
+		}
+		else
+		{
+			advancedControl();
+		}
+	}
+}
+
+void setTrims()
+{
+	// Channel 5 adjusts trim
+	// Channel 3 going to high saves
+	// Channel 4 moves to next wheel
+
+	int sDeg = map(ch5, 100, -100, 0, 180);
+	Serial.print("Degrees: ");
+	Serial.println(sDeg);
+
+	if (currentWheel == 1) {
+		servoW1.startEaseToD(sDeg, 100);
+	}
+	else if (currentWheel == 2) {
+		servoW3.startEaseToD(sDeg, 100);
+	}
+	else if (currentWheel == 3) {
+		servoW4.startEaseToD(sDeg, 100);
 	}
 	else {
-		Serial.println(" - Switched off");
+		servoW6.startEaseToD(sDeg, 100);
 	}
 
-	if (BASIC_CONTROL) {
-		basicControl();
+	if (ch3 > 90) {
+		Serial.println("Saving...");
+		delay(2000);
+		// Do save
+		
 	}
-	else
-	{
-		advancedControl();
+
+	if (ch4 > 90) {
+		currentWheel++;
+		if (currentWheel == 5) { currentWheel = 1; }
+		Serial.print("New wheel: ");
+		Serial.println(currentWheel);
+		delay(2000);
 	}
+	else if (ch4 < 90) {
+		currentWheel--;
+		if (currentWheel == 0) { currentWheel = 4; }
+		Serial.print("New wheel: ");
+		Serial.println(currentWheel);
+		delay(2000);
+	}
+	
 }
 
 void advancedControl()
