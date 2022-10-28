@@ -151,13 +151,13 @@ void setTrims()
 		servoW1.easeTo(sDeg);// .startEaseToD(sDeg, 100);
 	}
 	else if (currentWheel == 2) {
-		servoW3.startEaseToD(sDeg, 100);
+		servoW3.easeTo(sDeg);
 	}
 	else if (currentWheel == 3) {
-		servoW4.startEaseToD(sDeg, 100);
+		servoW4.easeTo(sDeg);
 	}
 	else {
-		servoW6.startEaseToD(sDeg, 100);
+		servoW6.easeTo(sDeg);
 	}
 
 	if (ch3 > 90) {
