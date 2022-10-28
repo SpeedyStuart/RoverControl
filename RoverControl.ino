@@ -9,13 +9,6 @@
 
 #define BASIC_CONTROL false
 
-struct ServoTrims {
-	int servo1;
-	int servo3;
-	int servo4;
-	int servo6;
-};
-
 // R/C
 IBusBM IBus;
 IBusBM IBusSensor;
@@ -47,11 +40,7 @@ float rMax = 2500; // Max turning radius (~straight)
 
 int angle = 0;   // servo position in degrees
 int servoTrimsAddress = 0;
-ServoTrims servoTrims = { 90,90,90,90 };
-int servo1Angle = 90;
-int servo3Angle = 90;
-int servo4Angle = 90;
-int servo6Angle = 90;
+int servoTrims[4] = {90,90,90,90};
 int currentWheel = 1;
 
 int s = 0; // rover speed
@@ -70,12 +59,19 @@ void setup()
 	// R/C: Attach iBus object to serial port
 	IBus.begin(Serial1);
 
-	EEPROM.get(servoTrimsAddress, servoTrims);
+	readIntArrayFromEEPROM(servoTrimsAddress, servoTrims, 4);
 
-	servoW1.attach(1, servoTrims.servo1);
-	servoW3.attach(3, servoTrims.servo3);
-	servoW4.attach(0, servoTrims.servo4);
-	servoW6.attach(2, servoTrims.servo6);
+	if (servoTrims[0] <= 0) {
+		servoTrims[0] = 90;
+		servoTrims[1] = 90;
+		servoTrims[2] = 90;
+		servoTrims[3] = 90;
+	}
+
+	servoW1.attach(1, servoTrims[0]);
+	servoW3.attach(3, servoTrims[1]);
+	servoW4.attach(0, servoTrims[2]);
+	servoW6.attach(2, servoTrims[3]);
 
 	servoW1.setSpeed(90);
 	servoW3.setSpeed(90);
@@ -166,9 +162,10 @@ void setTrims()
 
 	if (ch3 > 90) {
 		Serial.println("Saving...");
+		servoTrims[currentWheel-1] = sDeg;
 		delay(2000);
 		// Do save
-		
+		writeIntArrayIntoEEPROM(servoTrimsAddress, servoTrims, 4);
 	}
 
 	if (ch4 > 90) {
@@ -256,11 +253,11 @@ void advancedControl()
 	if (ch1 > 10) {
 		// Right
 		// Outer wheels
-		servoW1.startEaseTo(90 + thetaInnerFront); // front wheel steer right
-		servoW3.startEaseTo(90 - thetaInnerBack); // back wheel steer left for overall steering to the right of the rover
+		servoW1.startEaseTo(servoTrims[0] + thetaInnerFront); // front wheel steer right
+		servoW3.startEaseTo(servoTrims[1] - thetaInnerBack); // back wheel steer left for overall steering to the right of the rover
 		// Inner wheels
-		servoW4.startEaseTo(90 + thetaOuterFront);
-		servoW6.startEaseTo(90 - thetaOuterBack);
+		servoW4.startEaseTo(servoTrims[2] + thetaOuterFront);
+		servoW6.startEaseTo(servoTrims[3] - thetaOuterBack);
 
 		//Outer wheels run at speed1 (outer wheels are L)
 		analogWrite(LR_VR, speed1);
@@ -274,10 +271,10 @@ void advancedControl()
 		
 	}
 	else if (ch1 < -10) {
-		servoW1.startEaseTo(90 - thetaOuterFront);
-		servoW3.startEaseTo(90 + thetaOuterBack);
-		servoW4.startEaseTo(90 - thetaInnerFront);
-		servoW6.startEaseTo(90 + thetaInnerBack);
+		servoW1.startEaseTo(servoTrims[0] - thetaOuterFront);
+		servoW3.startEaseTo(servoTrims[1] + thetaOuterBack);
+		servoW4.startEaseTo(servoTrims[2] - thetaInnerFront);
+		servoW6.startEaseTo(servoTrims[3] + thetaInnerBack);
 		
 		//Outer wheels run at speed1 (outer wheels are R)
 		analogWrite(RR_VR, speed1);
@@ -291,10 +288,10 @@ void advancedControl()
 	}
 	else
 	{
-		servoW1.startEaseTo(90);
-		servoW3.startEaseTo(90);
-		servoW4.startEaseTo(90);
-		servoW6.startEaseTo(90);
+		servoW1.startEaseTo(servoTrims[0]);
+		servoW3.startEaseTo(servoTrims[1]);
+		servoW4.startEaseTo(servoTrims[2]);
+		servoW6.startEaseTo(servoTrims[3]);
 
 		//All wheels run at speed1
 		analogWrite(RR_VR, speed1);
@@ -444,4 +441,25 @@ bool readSwitch(byte channelInput, bool defaultValue) {
 	int intDefaultValue = (defaultValue) ? 100 : 0;
 	int ch = readChannel(channelInput, 0, 100, intDefaultValue);
 	return (ch > 50);
+}
+
+void writeIntArrayIntoEEPROM(int address, int numbers[], int arraySize)
+{
+	int addressIndex = address;
+	for (int i = 0; i < arraySize; i++)
+	{
+		EEPROM.update(addressIndex, numbers[i] >> 8);
+		EEPROM.update(addressIndex + 1, numbers[i] & 0xFF);
+		addressIndex += 2;
+	}
+}
+
+void readIntArrayFromEEPROM(int address, int numbers[], int arraySize)
+{
+	int addressIndex = address;
+	for (int i = 0; i < arraySize; i++)
+	{
+		numbers[i] = (EEPROM.read(addressIndex) << 8) + EEPROM.read(addressIndex + 1);
+		addressIndex += 2;
+	}
 }
