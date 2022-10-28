@@ -143,13 +143,16 @@ void setTrims()
 	// Channel 5 adjusts trim
 	// Channel 3 going to high saves
 	// Channel 4 moves to next wheel
+	//printChannels();
 
 	int sDeg = map(ch5, 100, -100, 0, 180);
-	Serial.print("Degrees: ");
+	Serial.print("Current Wheel: ");
+	Serial.print(currentWheel);
+	Serial.print("  Degrees: ");
 	Serial.println(sDeg);
 
 	if (currentWheel == 1) {
-		servoW1.startEaseToD(sDeg, 100);
+		servoW1.easeTo(sDeg);// .startEaseToD(sDeg, 100);
 	}
 	else if (currentWheel == 2) {
 		servoW3.startEaseToD(sDeg, 100);
@@ -175,7 +178,7 @@ void setTrims()
 		Serial.println(currentWheel);
 		delay(2000);
 	}
-	else if (ch4 < 90) {
+	else if (ch4 < -90) {
 		currentWheel--;
 		if (currentWheel == 0) { currentWheel = 4; }
 		Serial.print("New wheel: ");
