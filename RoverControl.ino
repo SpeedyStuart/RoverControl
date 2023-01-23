@@ -138,17 +138,12 @@ void setTrims()
 {
 	// Channel 5 adjusts trim
 	// Channel 3 going to high saves
-	// Channel 4 moves to next wheel
-	//printChannels();
+	// Channel 4 moves to next `/ prev wheel
 
 	int sDeg = map(ch5, 100, -100, 0, 180);
-	Serial.print("Current Wheel: ");
-	Serial.print(currentWheel);
-	Serial.print("  Degrees: ");
-	Serial.println(sDeg);
-
+	
 	if (currentWheel == 1) {
-		servoW1.easeTo(sDeg);// .startEaseToD(sDeg, 100);
+		servoW1.easeTo(sDeg);
 	}
 	else if (currentWheel == 2) {
 		servoW3.easeTo(sDeg);
@@ -171,18 +166,13 @@ void setTrims()
 	if (ch4 > 90) {
 		currentWheel++;
 		if (currentWheel == 5) { currentWheel = 1; }
-		Serial.print("New wheel: ");
-		Serial.println(currentWheel);
-		delay(2000);
+		delay(1000);
 	}
 	else if (ch4 < -90) {
 		currentWheel--;
 		if (currentWheel == 0) { currentWheel = 4; }
-		Serial.print("New wheel: ");
-		Serial.println(currentWheel);
 		delay(2000);
 	}
-	
 }
 
 void advancedControl()
@@ -208,7 +198,8 @@ void advancedControl()
 	else {
 		s = ch2 * -1;
 	}
-	
+	s = map(s, 0, 100, 0, 255);
+
 	Serial.print(" s:");
 	Serial.print(s);
 
@@ -221,16 +212,6 @@ void advancedControl()
 	Serial.print(speed2);
 
 	calculateServoAngle();
-	/*Serial.print(" I_F:");
-	Serial.print(thetaInnerFront);
-	Serial.print(" I_B:");
-	Serial.print(thetaInnerBack);
-	Serial.print(" O_F:");
-	Serial.print(thetaOuterFront);
-	Serial.print(" O_B:");
-	Serial.print(thetaOuterBack);*/
-
-	Serial.println("");
 
 	// Set motor directions
 	if (ch2 < 0) {
@@ -315,7 +296,6 @@ void basicControl() {
 	Serial.println(sDeg);
 
 	// 90 === 53
-
 
 	servoW1.startEaseToD(sDeg, 100);
 	servoW3.startEaseToD(sDeg, 100);
