@@ -2,7 +2,7 @@
 #include <Adafruit_PWMServoDriver.h>
 #include <IBusBM.h>
 #include <EEPROM.h>
-#include <Stepper.h>
+#include <AccelStepper.h>
 
 #define USE_PCA9685_SERVO_EXPANDER
 #include <ServoEasing.hpp>
@@ -32,8 +32,11 @@ int LM_EL = 25, LM_ZF = 27, LM_VR = 3;
 int pwr = 0;
 
 // Camera stepper
-int stepsPerRev = 400;
-Stepper cameraStepper(stepsPerRev, 49, 48, 47, 46);
+#define motorInterfaceType 1
+const int stepsPerRev = 400;
+const int cameraDir = 49;
+const int cameraStep = 48;
+AccelStepper cameraStepper(motorInterfaceType, cameraStep, cameraDir);
 
 // Geometry
 float d1 = 380; // Horizontal distance between middle of rover and corner wheels
@@ -112,7 +115,10 @@ void setup()
 	digitalWrite(LR_EL, HIGH);
 
 	// Camera stepper
-	cameraStepper.setSpeed(10);
+	cameraStepper.setMaxSpeed(1000);
+	cameraStepper.setAcceleration(50);
+	cameraStepper.setSpeed(200);
+	cameraStepper.moveTo(stepsPerRev / 2);
 }
 
 void loop()
@@ -141,7 +147,7 @@ void loop()
 		}
 	}
 
-	cameraStepper.step(ch4);
+	cameraStepper.run();
 }
 
 void setTrims()
