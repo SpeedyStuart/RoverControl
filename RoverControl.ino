@@ -34,8 +34,9 @@ int pwr = 0;
 // Camera stepper
 #define motorInterfaceType 1
 const int stepsPerRev = 400;
-const int cameraDir = 49;
-const int cameraStep = 48;
+const int cameraStepEnable = 54;
+const int cameraDir = 55;
+const int cameraStep = 56;
 AccelStepper cameraStepper(motorInterfaceType, cameraStep, cameraDir);
 
 // Geometry
@@ -115,6 +116,11 @@ void setup()
 	digitalWrite(LR_EL, HIGH);
 
 	// Camera stepper
+	pinMode(cameraStepEnable, OUTPUT);
+	pinMode(cameraDir, OUTPUT);
+	pinMode(cameraStep, OUTPUT);
+
+	digitalWrite(cameraStepEnable, HIGH);
 	cameraStepper.setMaxSpeed(1000);
 	cameraStepper.setAcceleration(50);
 	cameraStepper.setSpeed(200);
