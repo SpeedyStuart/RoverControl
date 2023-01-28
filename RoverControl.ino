@@ -319,7 +319,7 @@ void advancedControl()
 	}
 	//r = map(sDeg, 0, 180, -53, 53);
 
-	delay(100);
+	//delay(100);
 }
 
 void basicControl() {
