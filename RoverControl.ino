@@ -119,10 +119,10 @@ void setup()
 	digitalWrite(cameraStepEnable, LOW);
 
 	cameraStepper.setMaxSpeed(1000);
-	cameraStepper.setAcceleration(1000);
-	cameraStepper.setSpeed(1000);
+	//cameraStepper.setAcceleration(100);
+	cameraStepper.setSpeed(50);
 	
-	cameraStepper.moveTo(90 * 1.8 * 8);
+//	cameraStepper.moveTo(90 * 1.8 * 8);
 	//cameraStepper.moveTo(1200);
 }
 
@@ -155,11 +155,15 @@ void loop()
 
 	if (cameraStepper.distanceToGo() == 0) {
 		ch4 = readChannel(3);
-		cameraStepper.moveTo(-cameraStepper.currentPosition());
+		if (ch4 < 20 && ch4 > -20) {
+			cameraStepper.stop();
+		}
+		cameraStepper.move(ch4 * 28.8);// 2 * 1.8 * 8);
+		//cameraStepper.moveTo(-cameraStepper.currentPosition());
 	}
 	//	cameraStepper.move(ch4 * 28.8);// 2 * 1.8 * 8);
 
-	cameraStepper.run();
+	cameraStepper.runSpeed();
 }
 
 void setTrims()
