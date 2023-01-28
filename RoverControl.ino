@@ -33,10 +33,9 @@ int pwr = 0;
 
 // Camera stepper
 #define motorInterfaceType 1
-const int stepsPerRev = 400;
-const int cameraStepEnable = 54;
-const int cameraDir = 55;
-const int cameraStep = 56;
+const int cameraStepEnable = 56;
+const int cameraDir = 54;
+const int cameraStep = 55;
 AccelStepper cameraStepper(motorInterfaceType, cameraStep, cameraDir);
 
 // Geometry
@@ -117,14 +116,14 @@ void setup()
 
 	// Camera stepper
 	pinMode(cameraStepEnable, OUTPUT);
-	pinMode(cameraDir, OUTPUT);
-	pinMode(cameraStep, OUTPUT);
+	digitalWrite(cameraStepEnable, LOW);
 
-	digitalWrite(cameraStepEnable, HIGH);
 	cameraStepper.setMaxSpeed(1000);
-	cameraStepper.setAcceleration(50);
-	cameraStepper.setSpeed(200);
-	cameraStepper.moveTo(stepsPerRev / 2);
+	cameraStepper.setAcceleration(1000);
+	cameraStepper.setSpeed(1000);
+	
+	cameraStepper.moveTo(90 * 1.8 * 8);
+	//cameraStepper.moveTo(1200);
 }
 
 void loop()
@@ -137,21 +136,26 @@ void loop()
 	ch5 = readChannel(4);
 	ch6 = readChannel(5);
 
+	printChannels();
 	
-	if (readSwitch(5, false))  // Channel 6
-	{ 		
-		setTrims();
-	}
-	else 
-	{
-		if (BASIC_CONTROL) {
-			basicControl();
-		}
-		else
-		{
-			advancedControl();
-		}
-	}
+	//if (readSwitch(5, false))  // Channel 6
+	//{ 		
+	//	setTrims();
+	//}
+	//else 
+	//{
+	//	if (BASIC_CONTROL) {
+	//		basicControl();
+	//	}
+	//	else
+	//	{
+	//		advancedControl();
+	//	}
+	//}
+
+	if (cameraStepper.distanceToGo() == 0)
+		cameraStepper.moveTo(-cameraStepper.currentPosition());
+	//	cameraStepper.move(ch4 * 28.8);// 2 * 1.8 * 8);
 
 	cameraStepper.run();
 }
@@ -199,8 +203,8 @@ void setTrims()
 
 void advancedControl()
 {
-	Serial.print("Ch1:");
-	Serial.print(ch1);
+	//Serial.print("Ch1:");
+	//Serial.print(ch1);
 
 	int sDeg = map(ch1, 100, -100, 0, 180);
 	
@@ -211,8 +215,8 @@ void advancedControl()
 		r = map(ch1, -100, 0, rMin, rMax);
 	}
 	
-	Serial.print(" r:");
-	Serial.print(r);
+	//Serial.print(" r:");
+	//Serial.print(r);
 
 	if (ch2 > 0) {
 		s = ch2;
@@ -222,16 +226,16 @@ void advancedControl()
 	}
 	s = map(s, 0, 100, 0, 255);
 
-	Serial.print(" s:");
-	Serial.print(s);
+	//Serial.print(" s:");
+	//Serial.print(s);
 
 	calculateMotorsSpeed();
-	Serial.print(" SP1:");
+	/*Serial.print(" SP1:");
 	Serial.print(speed1);
 	Serial.print(" SP2:");
 	Serial.print(speed2);
 	Serial.print(" SP3:");
-	Serial.print(speed2);
+	Serial.print(speed2);*/
 
 	calculateServoAngle();
 
