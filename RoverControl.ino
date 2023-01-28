@@ -129,32 +129,34 @@ void setup()
 void loop()
 {
 	//IBus.loop();
-	ch1 = readChannel(0);
+	/*ch1 = readChannel(0);
 	ch2 = readChannel(1);
 	ch3 = readChannel(2);
 	ch4 = readChannel(3);
 	ch5 = readChannel(4);
 	ch6 = readChannel(5);
+	*/
 
-	printChannels();
-	
-	//if (readSwitch(5, false))  // Channel 6
-	//{ 		
-	//	setTrims();
-	//}
-	//else 
-	//{
-	//	if (BASIC_CONTROL) {
-	//		basicControl();
-	//	}
-	//	else
-	//	{
-	//		advancedControl();
-	//	}
-	//}
+	if (readSwitch(5, false))  // Channel 6
+	{ 		
+		setTrims();
+	}
+	else 
+	{
+		advancedControl();
+		/*if (BASIC_CONTROL) {
+			basicControl();
+		}
+		else
+		{
+			advancedControl();
+		}*/
+	}
 
-	if (cameraStepper.distanceToGo() == 0)
+	if (cameraStepper.distanceToGo() == 0) {
+		ch4 = readChannel(3);
 		cameraStepper.moveTo(-cameraStepper.currentPosition());
+	}
 	//	cameraStepper.move(ch4 * 28.8);// 2 * 1.8 * 8);
 
 	cameraStepper.run();
@@ -165,6 +167,9 @@ void setTrims()
 	// Channel 5 adjusts trim
 	// Channel 3 going to high saves
 	// Channel 4 moves to next `/ prev wheel
+	ch3 = readChannel(2);
+	ch4 = readChannel(3);
+	ch5 = readChannel(4);
 
 	int sDeg = map(ch5, 100, -100, 0, 180);
 	
@@ -203,8 +208,8 @@ void setTrims()
 
 void advancedControl()
 {
-	//Serial.print("Ch1:");
-	//Serial.print(ch1);
+	ch1 = readChannel(0);
+	ch2 = readChannel(1);
 
 	int sDeg = map(ch1, 100, -100, 0, 180);
 	
