@@ -143,7 +143,9 @@ void loop()
 	}
 	else 
 	{
-		advancedControl();
+		ch1 = readChannel(0);
+		ch2 = readChannel(1);
+	//	advancedControl();
 		/*if (BASIC_CONTROL) {
 			basicControl();
 		}
@@ -155,9 +157,10 @@ void loop()
 
 	if (cameraStepper.distanceToGo() == 0) {
 		ch4 = readChannel(3);
-		cameraStepper.moveTo(-cameraStepper.currentPosition());
+	//	cameraStepper.moveTo(-cameraStepper.currentPosition());
+
+			cameraStepper.moveTo(ch4 * 28.8);// 2 * 1.8 * 8);
 	}
-	//	cameraStepper.move(ch4 * 28.8);// 2 * 1.8 * 8);
 
 	cameraStepper.run();
 }
