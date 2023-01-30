@@ -33,8 +33,9 @@ int pwr = 0;
 // Camera stepper
 #define motorInterfaceType 1
 const int cameraStepEnable = 56;
-AccelStepper cameraStepper(motorInterfaceType, 55, 54);// cameraStep, cameraDir);
-int cameraPan = 0;
+const int cameraStep = 55;
+const int cameraDir = 54;
+int cameraPan = 200;
 
 // Camera tilt
 int cameraTilt = 90;
@@ -119,8 +120,6 @@ void setup()
 
 	// Camera stepper
 	pinMode(cameraStepEnable, OUTPUT);
-	digitalWrite(cameraStepEnable, LOW);
-	cameraStepper.setMaxSpeed(1000);
 }
 
 void loop()
@@ -131,7 +130,6 @@ void loop()
 	ch3 = readChannel(2);
 	ch4 = readChannel(3);
 	ch5 = readChannel(4);
-	//ch6 = readChannel(5);
 	
 	//printChannels();
 
@@ -144,16 +142,25 @@ void loop()
 		advancedControl();
 	}
 
-	//ch4 = readChannel(3);
-	//if (ch4 >= 1000 && ch4 < 1485) {
-	//	cameraPan = map(ch4, 1000, 1485, 400, 0);
-	//}
-	//else if (ch4 > 1515 && ch4 <= 2000) {
-	//	cameraPan = map(ch4, 1515, 2000, 0, -400);
-	//}
-	//else {
-	//	cameraPan = 0;
-	//}
+	if (ch4 >= 20) {
+		digitalWrite(cameraStepEnable, LOW);
+		digitalWrite(cameraDir, HIGH);
+		digitalWrite(cameraStep, HIGH);
+		delayMicroseconds(1000);
+		digitalWrite(cameraStep, LOW);
+		delayMicroseconds(1000);
+	}
+	else if (ch4 <= -20) {
+		digitalWrite(cameraStepEnable, LOW);
+		digitalWrite(cameraDir, LOW);
+		digitalWrite(cameraStep, HIGH);
+		delayMicroseconds(1000);
+		digitalWrite(cameraStep, LOW);
+		delayMicroseconds(1000);
+	}
+	else {
+		digitalWrite(cameraStepEnable, HIGH);
+	}
 	//cameraStepper.setSpeed(cameraPan);    // Camera pan
 	//cameraStepper.run();
 
