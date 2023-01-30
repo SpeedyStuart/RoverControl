@@ -20,6 +20,7 @@ ServoEasing servoW1(PCA9685_DEFAULT_ADDRESS);
 ServoEasing servoW3(PCA9685_DEFAULT_ADDRESS);
 ServoEasing servoW4(PCA9685_DEFAULT_ADDRESS);
 ServoEasing servoW6(PCA9685_DEFAULT_ADDRESS);
+//ServoEasing servoCameraTilt(PCA9685_DEFAULT_ADDRESS);
 
 //Motors
 int RR_EL = 39, RR_ZF = 37, RR_VR = 7;
@@ -37,6 +38,10 @@ const int cameraStepEnable = 56;
 const int cameraDir = 54;
 const int cameraStep = 55;
 AccelStepper cameraStepper(motorInterfaceType, cameraStep, cameraDir);
+int cameraPan = 0;
+
+// Camera tilt
+int cameraTilt = 90;
 
 // Geometry
 float d1 = 380; // Horizontal distance between middle of rover and corner wheels
@@ -80,11 +85,13 @@ void setup()
 	servoW3.attach(3, servoTrims[1]);
 	servoW4.attach(0, servoTrims[2]);
 	servoW6.attach(2, servoTrims[3]);
+	//servoCameraTilt.attach(4, cameraTilt);
 
 	servoW1.setSpeed(90);
 	servoW3.setSpeed(90);
 	servoW4.setSpeed(90);
 	servoW6.setSpeed(90);
+	//servoCameraTilt.setSpeed(90);
 
 	// Motors
 	pinMode(RR_EL, OUTPUT);
@@ -117,25 +124,20 @@ void setup()
 	// Camera stepper
 	pinMode(cameraStepEnable, OUTPUT);
 	digitalWrite(cameraStepEnable, LOW);
-
 	cameraStepper.setMaxSpeed(1000);
-	//cameraStepper.setAcceleration(100);
-	cameraStepper.setSpeed(50);
-	
-//	cameraStepper.moveTo(90 * 1.8 * 8);
-	//cameraStepper.moveTo(1200);
 }
 
 void loop()
 {
-	//IBus.loop();
-	/*ch1 = readChannel(0);
+//	IBus.loop();
+	ch1 = readChannel(0);
 	ch2 = readChannel(1);
 	ch3 = readChannel(2);
 	ch4 = readChannel(3);
 	ch5 = readChannel(4);
-	ch6 = readChannel(5);
-	*/
+	//ch6 = readChannel(5);
+	
+	//printChannels();
 
 	if (readSwitch(5, false))  // Channel 6
 	{ 		
@@ -144,33 +146,43 @@ void loop()
 	else 
 	{
 		advancedControl();
-		/*if (BASIC_CONTROL) {
-			basicControl();
-		}
-		else
-		{
-			advancedControl();
-		}*/
 	}
 
-	if (cameraStepper.distanceToGo() == 0) {
-		ch4 = readChannel(3);
-		if (ch4 < 20 && ch4 > -20) {
-			cameraStepper.stop();
-		}
-		cameraStepper.move(ch4 * 28.8);// 2 * 1.8 * 8);
-		//cameraStepper.moveTo(-cameraStepper.currentPosition());
-	}
-	//	cameraStepper.move(ch4 * 28.8);// 2 * 1.8 * 8);
+	//ch4 = readChannel(3);
+	//if (ch4 >= 1000 && ch4 < 1485) {
+	//	cameraPan = map(ch4, 1000, 1485, 400, 0);
+	//}
+	//else if (ch4 > 1515 && ch4 <= 2000) {
+	//	cameraPan = map(ch4, 1515, 2000, 0, -400);
+	//}
+	//else {
+	//	cameraPan = 0;
+	//}
+	//cameraStepper.setSpeed(cameraPan);    // Camera pan
+	//cameraStepper.run();
 
-	cameraStepper.runSpeed();
+	//// Camera servo
+	//ch3 = readChannel(2);
+	//if (ch3 < 1485) {
+	//	if (cameraTilt >= 35) {
+	//		cameraTilt--;
+	//		delay(20);
+	//	}
+	//}
+	//if (ch3 > 1515) {
+	//	if (cameraTilt <= 165) {
+	//		cameraTilt++;
+	//		delay(20);
+	//	}
+	//}
+	//servoCameraTilt.startEaseTo(cameraTilt);
 }
 
 void setTrims()
 {
 	// Channel 5 adjusts trim
 	// Channel 3 going to high saves
-	// Channel 4 moves to next `/ prev wheel
+	// Channel 4 moves to next / prev wheel
 	ch3 = readChannel(2);
 	ch4 = readChannel(3);
 	ch5 = readChannel(4);
@@ -267,6 +279,9 @@ void advancedControl()
 	}
 
 	if (ch1 > 10) {
+		Serial.print(servoTrims[0] + thetaInnerFront);
+
+		Serial.println(" - Moving");
 		// Right
 		// Outer wheels
 		servoW1.startEaseTo(servoTrims[0] + thetaInnerFront); // front wheel steer right
@@ -319,7 +334,7 @@ void advancedControl()
 	}
 	//r = map(sDeg, 0, 180, -53, 53);
 
-	//delay(100);
+	delay(50);
 }
 
 void basicControl() {
