@@ -8,8 +8,6 @@
 #include <ServoEasing.hpp>
 #include "PinDefinitions.h"
 
-#define BASIC_CONTROL false
-
 // R/C
 IBusBM IBus;
 IBusBM IBusSensor;
@@ -35,9 +33,7 @@ int pwr = 0;
 // Camera stepper
 #define motorInterfaceType 1
 const int cameraStepEnable = 56;
-const int cameraDir = 54;
-const int cameraStep = 55;
-AccelStepper cameraStepper(motorInterfaceType, cameraStep, cameraDir);
+AccelStepper cameraStepper(motorInterfaceType, 55, 54);// cameraStep, cameraDir);
 int cameraPan = 0;
 
 // Camera tilt
@@ -70,7 +66,7 @@ void setup()
 	Serial.println(F("START " __FILE__ " from " __DATE__ "\r\nUsing library version " VERSION_SERVO_EASING));
 
 	// R/C: Attach iBus object to serial port
-	IBus.begin(Serial1);
+	IBus.begin(Serial1, IBUSBM_NOTIMER);
 
 	readIntArrayFromEEPROM(servoTrimsAddress, servoTrims, 4);
 
@@ -129,7 +125,7 @@ void setup()
 
 void loop()
 {
-//	IBus.loop();
+	IBus.loop();
 	ch1 = readChannel(0);
 	ch2 = readChannel(1);
 	ch3 = readChannel(2);
@@ -183,9 +179,6 @@ void setTrims()
 	// Channel 5 adjusts trim
 	// Channel 3 going to high saves
 	// Channel 4 moves to next / prev wheel
-	ch3 = readChannel(2);
-	ch4 = readChannel(3);
-	ch5 = readChannel(4);
 
 	int sDeg = map(ch5, 100, -100, 0, 180);
 	
@@ -224,9 +217,6 @@ void setTrims()
 
 void advancedControl()
 {
-	ch1 = readChannel(0);
-	ch2 = readChannel(1);
-
 	int sDeg = map(ch1, 100, -100, 0, 180);
 	
 	if (ch1 > 0) {
@@ -279,9 +269,6 @@ void advancedControl()
 	}
 
 	if (ch1 > 10) {
-		Serial.print(servoTrims[0] + thetaInnerFront);
-
-		Serial.println(" - Moving");
 		// Right
 		// Outer wheels
 		servoW1.startEaseTo(servoTrims[0] + thetaInnerFront); // front wheel steer right
@@ -333,8 +320,6 @@ void advancedControl()
 		analogWrite(LM_VR, speed1);
 	}
 	//r = map(sDeg, 0, 180, -53, 53);
-
-	delay(50);
 }
 
 void basicControl() {
