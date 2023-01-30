@@ -133,14 +133,15 @@ void loop()
 	
 	//printChannels();
 
-	if (readSwitch(5, false))  // Channel 6
-	{ 		
-		setTrims();
-	}
-	else 
-	{
-		advancedControl();
-	}
+	advancedControl();
+	//if (readSwitch(5, false))  // Channel 6
+	//{ 		
+	//	setTrims();
+	//}
+	//else 
+	//{
+	//	advancedControl();
+	//}
 
 	if (ch4 >= 20) {
 		digitalWrite(cameraStepEnable, LOW);
@@ -327,6 +328,7 @@ void advancedControl()
 		analogWrite(LM_VR, speed1);
 	}
 	//r = map(sDeg, 0, 180, -53, 53);
+	delay(50);
 }
 
 void basicControl() {
