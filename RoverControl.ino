@@ -120,6 +120,8 @@ void setup()
 
 	// Camera stepper
 	pinMode(cameraStepEnable, OUTPUT);
+	pinMode(cameraStep, OUTPUT);
+	pinMode(cameraDir, OUTPUT);
 }
 
 void loop()
@@ -146,18 +148,21 @@ void loop()
 	if (ch4 >= 20) {
 		digitalWrite(cameraStepEnable, LOW);
 		digitalWrite(cameraDir, HIGH);
-		digitalWrite(cameraStep, HIGH);
-		delayMicroseconds(1000);
-		digitalWrite(cameraStep, LOW);
-		delayMicroseconds(1000);
+		for (int i = 0; i < 5; i++) {
+			digitalWrite(cameraStep, HIGH);
+			delayMicroseconds(1000);
+			digitalWrite(cameraStep, LOW);
+			delayMicroseconds(1000);
+		}
+		
 	}
 	else if (ch4 <= -20) {
 		digitalWrite(cameraStepEnable, LOW);
 		digitalWrite(cameraDir, LOW);
 		digitalWrite(cameraStep, HIGH);
-		delayMicroseconds(1000);
+		delayMicroseconds(2000);
 		digitalWrite(cameraStep, LOW);
-		delayMicroseconds(1000);
+	//	delayMicroseconds(2000);
 	}
 	else {
 		digitalWrite(cameraStepEnable, HIGH);
