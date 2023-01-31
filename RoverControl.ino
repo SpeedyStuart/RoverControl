@@ -150,7 +150,7 @@ void loop()
 	}
 	else if (ch4 >= 70) {
 		digitalWrite(cameraStepEnable, LOW);
-		rotateCamera(true, 2000);
+		rotateCamera(true, 4000);
 	}
 	else if (ch4 <= -20 && ch4 >= -70) {
 		digitalWrite(cameraStepEnable, LOW);
@@ -158,21 +158,20 @@ void loop()
 	}
 	else if (ch4 <= -70) {
 		digitalWrite(cameraStepEnable, LOW);
-		rotateCamera(false, 2000);
+		rotateCamera(false, 4000);
 	}
 	else {
 		digitalWrite(cameraStepEnable, HIGH);
 	}
 
 	// Camera servo
-	ch3 = readChannel(2);
-	if (ch3 < 1485) {
+	if (ch3 < 0) {
 		if (cameraTilt >= 35) {
 			cameraTilt--;
 			delay(20);
 		}
 	}
-	if (ch3 > 1515) {
+	if (ch3 > 0) {
 		if (cameraTilt <= 165) {
 			cameraTilt++;
 			delay(20);
@@ -390,7 +389,7 @@ void basicControl() {
 
 void rotateCamera(bool clockwise, int delay)
 {
-	digitalWrite(cameraDir, clockwise ? HIGH : LOW);
+	digitalWrite(cameraDir, clockwise ? LOW : HIGH);
 	digitalWrite(cameraStep, HIGH);
 	delayMicroseconds(delay);
 	digitalWrite(cameraStep, LOW);
