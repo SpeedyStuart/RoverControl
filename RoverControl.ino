@@ -18,7 +18,7 @@ ServoEasing servoW1(PCA9685_DEFAULT_ADDRESS);
 ServoEasing servoW3(PCA9685_DEFAULT_ADDRESS);
 ServoEasing servoW4(PCA9685_DEFAULT_ADDRESS);
 ServoEasing servoW6(PCA9685_DEFAULT_ADDRESS);
-//ServoEasing servoCameraTilt(PCA9685_DEFAULT_ADDRESS);
+ServoEasing servoCameraTilt(PCA9685_DEFAULT_ADDRESS);
 
 //Motors
 int RR_EL = 39, RR_ZF = 37, RR_VR = 7;
@@ -82,13 +82,13 @@ void setup()
 	servoW3.attach(3, servoTrims[1]);
 	servoW4.attach(0, servoTrims[2]);
 	servoW6.attach(2, servoTrims[3]);
-	//servoCameraTilt.attach(4, cameraTilt);
+	servoCameraTilt.attach(4, cameraTilt);
 
 	servoW1.setSpeed(90);
 	servoW3.setSpeed(90);
 	servoW4.setSpeed(90);
 	servoW6.setSpeed(90);
-	//servoCameraTilt.setSpeed(90);
+	servoCameraTilt.setSpeed(90);
 
 	// Motors
 	pinMode(RR_EL, OUTPUT);
@@ -135,56 +135,50 @@ void loop()
 	
 	//printChannels();
 
-	advancedControl();
-	//if (readSwitch(5, false))  // Channel 6
-	//{ 		
-	//	setTrims();
-	//}
-	//else 
-	//{
-	//	advancedControl();
-	//}
-
-	if (ch4 >= 20) {
-		digitalWrite(cameraStepEnable, LOW);
-		digitalWrite(cameraDir, HIGH);
-		for (int i = 0; i < 5; i++) {
-			digitalWrite(cameraStep, HIGH);
-			delayMicroseconds(1000);
-			digitalWrite(cameraStep, LOW);
-			delayMicroseconds(1000);
-		}
-		
+	if (readSwitch(5, false))  // Channel 6
+	{ 		
+		setTrims();
 	}
-	else if (ch4 <= -20) {
+	else 
+	{
+		advancedControl();
+	}
+
+	if (ch4 >= 20 && ch4 <= 70) {
 		digitalWrite(cameraStepEnable, LOW);
-		digitalWrite(cameraDir, LOW);
-		digitalWrite(cameraStep, HIGH);
-		delayMicroseconds(2000);
-		digitalWrite(cameraStep, LOW);
-	//	delayMicroseconds(2000);
+		rotateCamera(true, 1000);
+	}
+	else if (ch4 >= 70) {
+		digitalWrite(cameraStepEnable, LOW);
+		rotateCamera(true, 2000);
+	}
+	else if (ch4 <= -20 && ch4 >= -70) {
+		digitalWrite(cameraStepEnable, LOW);
+		rotateCamera(false, 1000);
+	}
+	else if (ch4 <= -70) {
+		digitalWrite(cameraStepEnable, LOW);
+		rotateCamera(false, 2000);
 	}
 	else {
 		digitalWrite(cameraStepEnable, HIGH);
 	}
-	//cameraStepper.setSpeed(cameraPan);    // Camera pan
-	//cameraStepper.run();
 
-	//// Camera servo
-	//ch3 = readChannel(2);
-	//if (ch3 < 1485) {
-	//	if (cameraTilt >= 35) {
-	//		cameraTilt--;
-	//		delay(20);
-	//	}
-	//}
-	//if (ch3 > 1515) {
-	//	if (cameraTilt <= 165) {
-	//		cameraTilt++;
-	//		delay(20);
-	//	}
-	//}
-	//servoCameraTilt.startEaseTo(cameraTilt);
+	// Camera servo
+	ch3 = readChannel(2);
+	if (ch3 < 1485) {
+		if (cameraTilt >= 35) {
+			cameraTilt--;
+			delay(20);
+		}
+	}
+	if (ch3 > 1515) {
+		if (cameraTilt <= 165) {
+			cameraTilt++;
+			delay(20);
+		}
+	}
+	servoCameraTilt.startEaseTo(cameraTilt);
 }
 
 void setTrims()
@@ -392,6 +386,25 @@ void basicControl() {
 	//Serial.println(map(pwr, 0, 100, 0, 255));
 
 	delay(100);
+}
+
+void rotateCamera(bool clockwise, int delay)
+{
+	digitalWrite(cameraDir, clockwise ? HIGH : LOW);
+	digitalWrite(cameraStep, HIGH);
+	delayMicroseconds(delay);
+	digitalWrite(cameraStep, LOW);
+	delayMicroseconds(delay);	
+
+	if (clockwise) {
+		cameraPan += 1;
+	}
+	else {
+		cameraPan -= 1;
+	}
+
+	Serial.print("Camera pan:");
+	Serial.println(cameraPan);
 }
 
 void calculateMotorsSpeed() {
