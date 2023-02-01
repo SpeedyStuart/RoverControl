@@ -150,7 +150,7 @@ void loop()
 	}
 	else if (ch4 >= 70) {
 		digitalWrite(cameraStepEnable, LOW);
-		rotateCamera(true, 4000);
+		rotateCamera(true, 200);
 	}
 	else if (ch4 <= -20 && ch4 >= -70) {
 		digitalWrite(cameraStepEnable, LOW);
@@ -158,26 +158,28 @@ void loop()
 	}
 	else if (ch4 <= -70) {
 		digitalWrite(cameraStepEnable, LOW);
-		rotateCamera(false, 4000);
+		rotateCamera(false, 200);
 	}
 	else {
 		digitalWrite(cameraStepEnable, HIGH);
 	}
 
 	// Camera servo
-	if (ch3 < 0) {
-		if (cameraTilt >= 35) {
+	if (ch3 < -10) {
+		if (cameraTilt >= 10) {
 			cameraTilt--;
 			delay(20);
 		}
 	}
 	if (ch3 > 0) {
-		if (cameraTilt <= 165) {
+		if (cameraTilt <= 170) {
 			cameraTilt++;
 			delay(20);
 		}
 	}
-	servoCameraTilt.startEaseTo(cameraTilt);
+	servoCameraTilt.easeTo(cameraTilt);
+
+	delay(50); // We need this for servos to move
 }
 
 void setTrims()
@@ -325,8 +327,6 @@ void advancedControl()
 		analogWrite(LF_VR, speed1);
 		analogWrite(LM_VR, speed1);
 	}
-	//r = map(sDeg, 0, 180, -53, 53);
-	delay(50);
 }
 
 void basicControl() {
