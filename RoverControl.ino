@@ -164,19 +164,13 @@ void loop()
 		digitalWrite(cameraStepEnable, HIGH);
 	}
 
-	// Camera servo
-	if (ch3 < -10) {
-		if (cameraTilt >= 10) {
-			cameraTilt--;
-			delay(20);
-		}
+	if (ch3 < -5 || ch3 > 5) {
+		cameraTilt = map(ch3, 100, -100, 160, 0);
 	}
-	if (ch3 > 0) {
-		if (cameraTilt <= 170) {
-			cameraTilt++;
-			delay(20);
-		}
+	else {
+		cameraTilt = 80;
 	}
+	
 	servoCameraTilt.easeTo(cameraTilt);
 
 	delay(50); // We need this for servos to move
