@@ -4,3 +4,9 @@
 
 /.vs/RoverControl/v17
 /__vm
+/.vs/RoverControl
+/Debug/RoverControl.log
+/Release/RoverControl.tlog/RoverControl.lastbuildstate
+/Release/RoverControl.log
+/Release/vc143.pdb
+/~AutoRecover.RoverControl.vcxproj0
