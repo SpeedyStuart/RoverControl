@@ -5,6 +5,7 @@
 #include <AccelStepper.h>
 
 #define USE_PCA9685_SERVO_EXPANDER
+#define PROVIDE_ONLY_LINEAR_MOVEMENT
 #include <ServoEasing.hpp>
 #include "PinDefinitions.h"
 
@@ -34,10 +35,17 @@ int pwr = 0;
 const int cameraStepEnable = 56;
 const int cameraStep = 55;
 const int cameraDir = 54;
+const int cameraLimit = 58;
+
+int cameraRotation = 180;
+int maxRotation = 0;
+int prevMove = 0;
+
 AccelStepper cameraStepper(motorInterfaceType, cameraStep, cameraDir);
 
 // Camera tilt
-int cameraTilt = 90;
+int cameraTilt = 77;
+ServoEasing servoTilt(PCA9685_DEFAULT_ADDRESS);
 
 // Geometry
 float d1 = 380; // Horizontal distance between middle of rover and corner wheels
@@ -82,11 +90,13 @@ void setup()
 	servoW3.attach(3, servoTrims[1]);
 	servoW4.attach(0, servoTrims[2]);
 	servoW6.attach(2, servoTrims[3]);
+	servoTilt.attach(4, 90);
 
-	servoW1.setSpeed(90);
+	setSpeedForAllServos(220);
+	/*servoW1.setSpeed(90);
 	servoW3.setSpeed(90);
 	servoW4.setSpeed(90);
-	servoW6.setSpeed(90);
+	servoW6.setSpeed(90);*/
 
 	// Motors
 	pinMode(RR_EL, OUTPUT);
@@ -120,13 +130,15 @@ void setup()
 	pinMode(cameraStepEnable, OUTPUT);
 	pinMode(cameraStep, OUTPUT);
 	pinMode(cameraDir, OUTPUT);
+	pinMode(cameraLimit, INPUT_PULLUP);
 
 	cameraStepper.setEnablePin(cameraStepEnable);
 	digitalWrite(cameraStepEnable, LOW);
 
-	cameraStepper.setMaxSpeed(1000);
-	cameraStepper.setAcceleration(1000);
-	cameraStepper.setSpeed(1000);
+	cameraStepper.setMaxSpeed(10000);
+	cameraStepper.setAcceleration(900000);
+
+	calibrateCamera();
 }
 
 void loop()
@@ -150,39 +162,94 @@ void loop()
 		{
 			servoLoopCount = 0;
 			advancedControl();
+			if (ch3 > 10 || ch3 < -10) {
+				servoTilt.startEaseTo((int)map(ch3, -100, 100, 150, 20));
+			}
+			else {
+				servoTilt.startEaseTo(cameraTilt);
+			}
 		}
 		servoLoopCount++;
 	}	
 
-	if (ch4 >= 20) {
-		if (ch4 >= 70)
-			cameraStepper.move(-100);
-		else
-			cameraStepper.move(-50);
+	cameraRotate((ch4*-1));
+}
+
+void cameraRotate(int ch) {
+	bool limit = digitalRead(cameraLimit) == LOW;
+
+	if (ch >= 10 || ch <= -10) {
+		
+		/*Serial.print("CH:");
+		Serial.print(ch);
+		Serial.print(" :PREV:");
+		Serial.println(prevMove);
+		*/
+		if (limit && ((ch > 0 && prevMove > 0) || (ch < 0 && prevMove < 0))) {
+			// stop
+			cameraStepper.stop();
+			digitalWrite(cameraStepEnable, HIGH);
+
+			Serial.print("Camera stopped at:");
+			Serial.println(cameraStepper.currentPosition());
+		}
+		else {
+			digitalWrite(cameraStepEnable, LOW);
+			cameraStepper.move(ch);
+
+			if (!limit)
+				prevMove = ch;
+		}
 	}
-	else if (ch4 <= -20) {
-		if (ch4 <= -70)
-			cameraStepper.move(100);
-		else
-			cameraStepper.move(50);
+	else {
+		digitalWrite(cameraStepEnable, HIGH);
+		prevMove = 0;
 	}
+
 	cameraStepper.run();
+}
 
-	//// Camera servo
-	//if (ch3 < -10) {
-	//	if (cameraTilt >= 10) {
-	//		cameraTilt--;
-	//		delay(20);
-	//	}
-	//}
-	//if (ch3 > 0) {
-	//	if (cameraTilt <= 170) {
-	//		cameraTilt++;
-	//		delay(20);
-	//	}
-	//}
-	//servoCameraTilt.easeTo(cameraTilt);
 
+void calibrateCamera() {
+
+	Serial.println("Calibrating");
+
+	digitalWrite(cameraStepEnable, LOW);
+
+	while (digitalRead(cameraLimit) != LOW) {
+
+		cameraStepper.move(-40);
+		cameraStepper.run();
+		delay(1);
+	}
+
+	cameraStepper.stop();
+	cameraStepper.runToPosition();
+
+	Serial.print("Camera right position:");
+	Serial.println(cameraStepper.currentPosition());
+	int leftPos = cameraStepper.currentPosition();
+
+	//cameraStepper.setCurrentPosition(0);
+	//cameraStepper.setSpeed(1000);
+	cameraStepper.runToNewPosition(20);
+
+	while (digitalRead(cameraLimit) != LOW) {
+
+		cameraStepper.move(40);
+		cameraStepper.run();
+		delay(1);
+	}
+	
+	maxRotation = leftPos - cameraStepper.currentPosition();
+	Serial.print("Camera left position:");
+	Serial.println(maxRotation);
+
+	cameraStepper.setSpeed(1000);
+	cameraStepper.runToNewPosition(maxRotation / 2);
+
+	Serial.println("Calibration done");
+	digitalWrite(cameraStepEnable, HIGH);
 }
 
 void setTrims()
@@ -377,25 +444,6 @@ void basicControl() {
 	delay(100);
 }
 
-void rotateCamera(bool clockwise, int delay)
-{
-	digitalWrite(cameraDir, clockwise ? LOW : HIGH);
-	digitalWrite(cameraStep, HIGH);
-	delayMicroseconds(delay);
-	digitalWrite(cameraStep, LOW);
-	delayMicroseconds(delay);	
-
-	/*if (clockwise) {
-		cameraPan += 1;
-	}
-	else {
-		cameraPan -= 1;
-	}
-
-	Serial.print("Camera pan:");
-	Serial.println(cameraPan);*/
-}
-
 void calculateMotorsSpeed() {
 	// if no steering, all wheels speed is the same - straight move
 	if (ch1 > -20 && ch1 < 20) {
@@ -404,7 +452,7 @@ void calculateMotorsSpeed() {
 	// when steering, wheels speed depend on the turning radius value
 	else {
 		// Outer wheels, furthest wheels from turning point, have max speed
-		// Due to the rover geometry, all three outer wheels should rotate almost with the same speed. They differe only 1% so we asume they are the same.
+		// Due to the rover geometry, all three outer wheels should rotate almost with the same speed. They differ only by ~1% so we asume they are the same.
 		speed1 = s;
 		// Inner front and back wheels are closer to the turing point and have lower speeds compared to the outer speeds
 		speed2 = s * sqrt(pow(d3, 2) + pow((r - d1), 2)) / (r + d4);
