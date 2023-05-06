@@ -180,11 +180,6 @@ void cameraRotate(int ch) {
 
 	if (ch >= 10 || ch <= -10) {
 		
-		/*Serial.print("CH:");
-		Serial.print(ch);
-		Serial.print(" :PREV:");
-		Serial.println(prevMove);
-		*/
 		if (limit && ((ch > 0 && prevMove > 0) || (ch < 0 && prevMove < 0))) {
 			// stop
 			cameraStepper.stop();
@@ -230,12 +225,9 @@ void calibrateCamera() {
 	Serial.println(cameraStepper.currentPosition());
 	int leftPos = cameraStepper.currentPosition();
 
-	//cameraStepper.setCurrentPosition(0);
-	//cameraStepper.setSpeed(1000);
 	cameraStepper.runToNewPosition(20);
 
 	while (digitalRead(cameraLimit) != LOW) {
-
 		cameraStepper.move(40);
 		cameraStepper.run();
 		delay(1);
